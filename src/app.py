@@ -1,11 +1,37 @@
 #!/usr/bin/env python
 
 from flask import Flask, jsonify, make_response, request
-from scrapers import VehicleEnquiryScraper
+from scrapers import LicenseScraper, LicenseAuthorizationScraper, VehicleEnquiryScraper
+
+from ukpostcodeparser.parser import parse_uk_postcode
 
 
 app = Flask(__name__)
+license_scraper = LicenseScraper()
+license_authorization_scraper = LicenseAuthorizationScraper()
 vehicle_scraper = VehicleEnquiryScraper()
+
+
+@app.route('/api/v1.0/license', methods=['GET'])
+def get_license():
+    license_scraper.setupDriver()
+    license = license_scraper.get_data(
+        request.args.get('dln'), request.args.get('nino')
+    )
+    license_scraper.closeDriver()
+    return jsonify(license)
+
+
+@app.route('/api/v1.0/license-auth', methods=['GET'])
+def get_license_authorization():
+    license_authorization_scraper.setupDriver()
+    outcode, incode = parse_uk_postcode(request.args.get('postcode'))
+    postcode = '{}{}'.format(outcode, incode)
+    license_authorization = license_authorization_scraper.get_data(
+        request.args.get('dln'), request.args.get('nino'), postcode
+    )
+    # license_authorization_scraper.closeDriver()
+    return jsonify(license_authorization)
 
 
 @app.route('/api/v1.0/vehicle-enquiry', methods=['GET'])

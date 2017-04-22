@@ -19,6 +19,8 @@ pip install -r requirements.txt
 python src/app.py
 ````
 
+The app will be listening at http://localhost:8040
+
 Using Docker and UWSGI
 ----------------------
 
